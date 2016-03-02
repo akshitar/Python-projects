@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn import cross_validation
 from sklearn import svm
 from patsy import dmatrix
-from sklearn.svm import LinearSVC
+from sklearn.svm import NuSVC, LinearSVC
 from sklearn.metrics import accuracy_score
 from sklearn.grid_search import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -58,21 +58,23 @@ newDataset = chi2Dataframe(threshold, dataset,chiValues)
 zeroCol = pd.DataFrame(dataset[0])
 newDataset = pd.concat([zeroCol , newDataset] , join='outer', axis =1)
 newDataset.columns = arange(0,len(newDataset.columns))
-split = np.random.permutation(int(rows*0.9))
+split = np.random.permutation(int(rows*0.5))
 redDataset = newDataset.iloc[split]
 rows,cols = redDataset.shape
 feature_number = list(range(1,cols))
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(redDataset[feature_number], redDataset[0], test_size=0.3,random_state=1)
 
-clf = GridSearchCV(LinearSVC(penalty='l2',dual=True), cv=5,param_grid={"C": [0.001,0.1,1e0, 1e1, 1e2, 1e3]})#,"gamma": np.logspace(-2, 2, 5)})
-clf.fit(X_train,y_train)
-yTest_pred = clf.predict(X_test)
-yTrain_pred = clf.predict(X_train)
-print("Score method for validation with Grid CV for 0.9: {0}".format(accuracy_score(y_test, yTest_pred)))
-print("Score method for training with Grid CV: {0}".format(accuracy_score(y_train, yTrain_pred)))
+rbf_clf = GridSearchCV(NuSVC(kernel='rbf'), cv=5,param_grid={"C": [0.001,0.1,1e0, 1e1, 1e2, 1e3],"gamma": np.logspace(-2, 2, 5)})
+rbf_clf.fit(X_train,y_train)
+yTest_pred = rbf_clf.predict(X_test)
+yTrain_pred = rbf_clf.predict(X_train)
+print("Score method for validation with RBF kernel for 0.9: {0}".format(accuracy_score(y_test, yTest_pred)))
+print("Score method for training with RBF kernel: {0}".format(accuracy_score(y_train, yTrain_pred)))
 print("All done")
 
 """for rows*0.5: Score method for validation with Grid CV: 0.354002730047
     Score method for training with Grid CV: 0.364098593367"""
 """for rows*0.7 : Score method for validation with Grid CV: 0.354520948639
     Score method for training with Grid CV: 0.362271015"""
+""" for rows*0.9: Score method for validation with Grid CV for 0.9: 0.35639247
+    Score method for training with Grid CV: 0.362732586761"""
