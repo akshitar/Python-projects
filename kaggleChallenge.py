@@ -35,7 +35,16 @@ for i in clsNum:
     result['TripType'].loc[result['TripType']==i] = j
     j +=1
 
-# Expand 'ScanCount' and 'FinelineNumber' categories
+#Count number of samples in each class
+nSamples = []
+for i in range(1,len(clsNum)+1):
+    nSamples.append(sum(result['TripType'].loc[result['TripType']==i]))
+
+print(nSamples)
+print("Min number of samples: {0} and for class: {1}".format(min(nSamples),(nSamples.index(min(nSamples)))+1))
+print("Max number of samples: {0} and for class: {1}".format(max(nSamples),(nSamples.index(max(nSamples)))+1))
+
+"""# Expand 'ScanCount' and 'FinelineNumber' categories
 scanCount = dmatrix('C(ScanCount)-1',result, return_type='dataframe')
 flNum = dmatrix('C(FinelineNumber)-1',result, return_type='dataframe')
 result = result.drop(['ScanCount', 'FinelineNumber','Upc'], axis=1)
@@ -70,7 +79,7 @@ yTest_pred = rbf_clf.predict(X_test)
 yTrain_pred = rbf_clf.predict(X_train)
 print("Score method for validation with RBF kernel for 0.9: {0}".format(accuracy_score(y_test, yTest_pred)))
 print("Score method for training with RBF kernel: {0}".format(accuracy_score(y_train, yTrain_pred)))
-print("All done")
+print("All done")"""
 
 """for rows*0.5: Score method for validation with Grid CV: 0.354002730047
     Score method for training with Grid CV: 0.364098593367"""
@@ -78,3 +87,6 @@ print("All done")
     Score method for training with Grid CV: 0.362271015"""
 """ for rows*0.9: Score method for validation with Grid CV for 0.9: 0.35639247
     Score method for training with Grid CV: 0.362732586761"""
+"""for rbf 0.3: Score method for validation with Grid CV for 0.9: 0.360083864924
+    Score method for training with Grid CV: 0.360572212424"""
+    
