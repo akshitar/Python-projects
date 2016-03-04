@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn import cross_validation
 from sklearn import svm
 from patsy import dmatrix
+from sklearn.utils import resample
 from sklearn.svm import NuSVC, LinearSVC
 from sklearn.metrics import accuracy_score
 from sklearn.grid_search import GridSearchCV
@@ -34,20 +35,30 @@ j = 1
 for i in clsNum:
     result['TripType'].loc[result['TripType']==i] = j
     j +=1
+a = np.sort(pd.unique(result['TripType'].ravel()))
+print('Sorted new class numbers: {0}'.format(a))
 
 #Count number of samples in each class
 nSamples = []
 for i in range(1,len(clsNum)+1):
-    nSamples.append(sum(result['TripType'].loc[result['TripType']==i]))
+    nSamples.append(sum(result['TripType']==i))
 
-print(nSamples)
 print("Min number of samples: {0} and for class: {1}".format(min(nSamples),(nSamples.index(min(nSamples)))+1))
 print("Max number of samples: {0} and for class: {1}".format(max(nSamples),(nSamples.index(max(nSamples)))+1))
+
+#We clearly need to over sample our minority classes such that each class will have samples=3127
+
+#for i in nSamples:
+#   if (nSamples[i]<3127):
+dummy = result.loc[result['TripType']==9]
+num = np.random.permutation(8)
+dummy[75] = pd.DataFrame(data=num, index=None, columns=None)
+print("New:{0}".format(dummy.shape))
 
 """# Expand 'ScanCount' and 'FinelineNumber' categories
 scanCount = dmatrix('C(ScanCount)-1',result, return_type='dataframe')
 flNum = dmatrix('C(FinelineNumber)-1',result, return_type='dataframe')
-result = result.drop(['ScanCount', 'FinelineNumber','Upc'], axis=1)
+result = result.drop(['ScanCount', 'FinelineNumber'], axis=1)
 
 #Concatenate the resulting expanded features
 dataset = pd.concat([result, scanCount, flNum], axis=1)
