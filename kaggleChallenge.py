@@ -3,6 +3,7 @@ from numpy import *
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import pandas as pd
+import random
 from sklearn import cross_validation
 from sklearn import svm
 from patsy import dmatrix
@@ -15,6 +16,7 @@ from sklearn.cross_validation import KFold,train_test_split
 from sklearn.feature_selection import SelectKBest, f_classif, chi2
 
 np.set_printoptions(precision=5, threshold=np.inf)
+pd.set_option('max_columns', 80)
 
 # Function for evaluating new set of features for different thresholds of chi2 values
 def chi2Dataframe(threshold,dataset,chiValues):
@@ -27,6 +29,7 @@ def chi2Dataframe(threshold,dataset,chiValues):
 
 # Read Training data CSV file directly from the desktop and save the results
 result = pd.read_csv("/home/ubuntu/walmartdata(woV).csv").dropna(axis  = 1, how = 'any')
+del result['Upc']
 
 #Giving asymmetrical class numbers symmetry
 result['TripType'] = result['TripType'].convert_objects(convert_numeric=True)
@@ -36,7 +39,7 @@ for i in clsNum:
     result['TripType'].loc[result['TripType']==i] = j
     j +=1
 a = np.sort(pd.unique(result['TripType'].ravel()))
-print('Sorted new class numbers: {0}'.format(a))
+#print('Sorted new class numbers: {0}'.format(a))
 
 #Count number of samples in each class
 nSamples = []
@@ -45,15 +48,29 @@ for i in range(1,len(clsNum)+1):
 
 print("Min number of samples: {0} and for class: {1}".format(min(nSamples),(nSamples.index(min(nSamples)))+1))
 print("Max number of samples: {0} and for class: {1}".format(max(nSamples),(nSamples.index(max(nSamples)))+1))
+#print(nSamples)
+#Create an empty dataframe which will have over-samples samples
+newDataframe = pd.DataFrame(columns=result.columns)
 
-#We clearly need to over sample our minority classes such that each class will have samples=3127
+#We need to over sample our minority classes such that each class will have samples=4000
 
-#for i in nSamples:
-#   if (nSamples[i]<3127):
-dummy = result.loc[result['TripType']==9]
-num = np.random.permutation(8)
-dummy[75] = pd.DataFrame(data=num, index=None, columns=None)
-print("New:{0}".format(dummy.shape))
+for n,item in enumerate(nSamples):
+    if (item<4000):
+        dummy = result.loc[result['TripType']==n+1]
+        k = len(dummy)
+        dummy[:][73] = 0
+        num = np.random.permutation(k)
+        dummy.insert(73,'randNum',num)
+        dummy = dummy.set_index(['randNum'])
+        for i in range(0,4000):
+            j = random.randrange(0, k, 1)
+            newDataframe.loc[len(newDataframe)] = dummy.loc[j]
+    else:
+        continue
+print("DONE!")
+writer = pd.ExcelWriter('excel_simple.xlsx', engine='xlsxwriter')
+newDataframe.to_excel(writer,'Sheet1')
+writer.save()
 
 """# Expand 'ScanCount' and 'FinelineNumber' categories
 scanCount = dmatrix('C(ScanCount)-1',result, return_type='dataframe')
