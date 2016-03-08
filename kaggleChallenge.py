@@ -18,14 +18,14 @@ from sklearn.feature_selection import SelectKBest, f_classif, chi2
 np.set_printoptions(precision=5, threshold=np.inf)
 pd.set_option('max_columns', 80)
 
-# Function for evaluating new set of features for different thresholds of chi2 values
+"""# Function for evaluating new set of features for different thresholds of chi2 values
 def chi2Dataframe(threshold,dataset,chiValues):
     newDataset = pd.DataFrame()
     for i in range(0,chiValues.shape[0]):
         if chiValues[i]>threshold:
             newDataset[i]=dataset[i+1]
         else: continue
-    return newDataset
+    return newDataset"""
 
 # Read Training data CSV file directly from the desktop and save the results
 result = pd.read_csv("/home/ubuntu/walmartdata(woV).csv").dropna(axis  = 1, how = 'any')
@@ -56,6 +56,7 @@ newDataframe = pd.DataFrame(columns=result.columns)
 
 for n,item in enumerate(nSamples):
     if (item<4000):
+        print(n+1)
         dummy = result.loc[result['TripType']==n+1]
         k = len(dummy)
         dummy[:][73] = 0
@@ -66,11 +67,13 @@ for n,item in enumerate(nSamples):
             j = random.randrange(0, k, 1)
             newDataframe.loc[len(newDataframe)] = dummy.loc[j]
     else:
-        continue
-print("DONE!")
-writer = pd.ExcelWriter('excel_simple.xlsx', engine='xlsxwriter')
-newDataframe.to_excel(writer,'Sheet1')
-writer.save()
+        print(n+1)
+        dummy = result.loc[result['TripType']==n+1]
+        frames = [newDataframe , dummy]
+        newDataframe = pd.concat(frames, ignore_index= True, join  ='outer')
+
+prnt("DONE")
+print(newDataframe.shape)
 
 """# Expand 'ScanCount' and 'FinelineNumber' categories
 scanCount = dmatrix('C(ScanCount)-1',result, return_type='dataframe')
