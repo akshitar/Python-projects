@@ -48,7 +48,7 @@ for i in range(1,len(clsNum)+1):
 
 print("Min number of samples: {0} and for class: {1}".format(min(nSamples),(nSamples.index(min(nSamples)))+1))
 print("Max number of samples: {0} and for class: {1}".format(max(nSamples),(nSamples.index(max(nSamples)))+1))
-#print(nSamples)
+print(nSamples)
 #Create an empty dataframe which will have over-samples samples
 newDataframe = pd.DataFrame(columns=result.columns)
 
@@ -56,7 +56,6 @@ newDataframe = pd.DataFrame(columns=result.columns)
 
 for n,item in enumerate(nSamples):
     if (item<4000):
-        print(n+1)
         dummy = result.loc[result['TripType']==n+1]
         k = len(dummy)
         dummy[:][73] = 0
@@ -67,15 +66,14 @@ for n,item in enumerate(nSamples):
             j = random.randrange(0, k, 1)
             newDataframe.loc[len(newDataframe)] = dummy.loc[j]
     else:
-        print(n+1)
         dummy = result.loc[result['TripType']==n+1]
         frames = [newDataframe , dummy]
         newDataframe = pd.concat(frames, ignore_index= True, join  ='outer')
 
-prnt("DONE")
 print(newDataframe.shape)
+result = newDataframe
 
-"""# Expand 'ScanCount' and 'FinelineNumber' categories
+# Expand 'ScanCount' and 'FinelineNumber' categories
 scanCount = dmatrix('C(ScanCount)-1',result, return_type='dataframe')
 flNum = dmatrix('C(FinelineNumber)-1',result, return_type='dataframe')
 result = result.drop(['ScanCount', 'FinelineNumber'], axis=1)
@@ -110,7 +108,7 @@ yTest_pred = rbf_clf.predict(X_test)
 yTrain_pred = rbf_clf.predict(X_train)
 print("Score method for validation with RBF kernel for 0.9: {0}".format(accuracy_score(y_test, yTest_pred)))
 print("Score method for training with RBF kernel: {0}".format(accuracy_score(y_train, yTrain_pred)))
-print("All done")"""
+print("All done")
 
 """for rows*0.5: Score method for validation with Grid CV: 0.354002730047
     Score method for training with Grid CV: 0.364098593367"""
