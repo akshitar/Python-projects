@@ -51,7 +51,7 @@ with open('data/transactionLog.csv', 'rb') as transactionLog:
                 userFeatures[str(userData[0])] = list(set(userFeatures[str(userData[0])] + productFeatures[str(userData[1])]))
             else:
                 userFeatures[str(userData[0])] = productFeatures[str(userData[1])]
-
+            
             # Append products to the user profile
             if str(userData[0]) in userProducts:
                 userProducts[str(userData[0])].append(userData[1])
@@ -86,35 +86,33 @@ clusters = AgglomerativeClustering(nClusters, connectivity = None, linkage = 'wa
 for i in range(0, len(clusters)):
     clusterList[clusters[i]].append(i + 1)
     if str(i + 1) in userProducts:
-        if len(itemsForUsersInCluster[clusters[i]]) == 0:
-            itemsForUsersInCluster[clusters[i]].append(str(i + 1))
-        itemsForUsersInCluster[clusters[i]].append(userProducts[str(i + 1)])
+        itemsForUsersInCluster[clusters[i]].append([str(i + 1)] + userProducts[str(i + 1)])
         itemsInCluster[clusters[i]] = list(set(itemsInCluster[clusters[i]] + userProducts[str(i + 1)]))
 
 
 # Make an association rule data table
 for clusterNum,item in enumerate(itemsForUsersInCluster):
     columnProducts = unique(itemsInCluster[clusterNum])
-    print(columnProducts)
     associationRule = pd.DataFrame(0, index=columnProducts, columns=columnProducts)
-    print(associationRule)
     for j,products in enumerate(item):
-        if len(products)<=2:
+        recommendationDict = dict()
+        if len(products) <= 2:
             continue
         else:
             length = len(products)
             for p in range(1,length):
                 for q in range(p,length):
-                    print(p)
-                    print(q)
                     associationRule.loc[products[p], products[q]] += 1
                     associationRule.loc[products[q], products[p]] += 1
-        print("For users in  cluster {0} the recommendations are:".format(clusterNum))
-        print("For user {0}".format(products[0]))
-        ar_boolean = associationRule>0
-        ar_boolean['final'] = ar_boolean.apply(lambda x: bar(associationRule,ar_boolean.columns),axis=1)
-        ar_output =  ar_boolean[ar_boolean['final'] != '']['final']
-        ar_output =  unique(ar_output.ravel())
-
-    print(associationRule)
-    break
+    print("For users in  cluster {0} the recommendations are:".format(clusterNum))
+    print("For user {0}".format(products[0]))
+    for elemIndex in range(0, len(products)):
+        ar_boolean = associationRule.loc[products[elemIndex]] > 0
+        ar_boolean = ar_boolean[ar_boolean == True]
+        associatedProducts = ar_boolean.index.values
+        for i in range(0, len(associatedProducts)):
+            if associatedProducts[i] in recommendationDict.keys():
+                recommendationDict[associatedProducts[i]] = recommendationDict[associatedProducts[i]] + associationRule[products[1]][associatedProducts[i]]
+            else:
+                recommendationDict[associatedProducts[i]] = associationRule[products[elemIndex]][associatedProducts[i]]
+# print(associationRule)
