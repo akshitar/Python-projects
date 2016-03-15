@@ -102,9 +102,9 @@ rows,cols = redDataset.shape
 feature_number = list(range(1,cols))
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(redDataset[feature_number], redDataset[0], test_size=0.3,random_state=1)
 
-parameter = {'C': [0.001,0.1,1e0, 1e1, 1e2, 1e3],
-    'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1], }
-rbf_clf = GridSearchCV(NuSVC(kernel='sigmoid'), cv=3, param_grid=parameter)
+#parameter = {'C': [0.001,0.1,1e0, 1e1, 1e2, 1e3],
+parameter = {'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1], }
+rbf_clf = GridSearchCV(SVC(kernel='sigmoid',random_state= 1), cv=3, param_grid=parameter)
 rbf_clf.fit(X_train,y_train)
 yTest_pred = rbf_clf.predict(X_test)
 yTrain_pred = rbf_clf.predict(X_train)
