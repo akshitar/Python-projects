@@ -46,9 +46,9 @@ nSamples = []
 for i in range(1,len(clsNum)+1):
     nSamples.append(sum(result['TripType']==i))
 
-print("Min number of samples: {0} and for class: {1}".format(min(nSamples),(nSamples.index(min(nSamples)))+1))
-print("Max number of samples: {0} and for class: {1}".format(max(nSamples),(nSamples.index(max(nSamples)))+1))
-print(nSamples)
+#print("Min number of samples: {0} and for class: {1}".format(min(nSamples),(nSamples.index(min(nSamples)))+1))
+#print("Max number of samples: {0} and for class: {1}".format(max(nSamples),(nSamples.index(max(nSamples)))+1))
+#print(nSamples)
 #Create an empty dataframe which will have over-samples samples
 newDataframe = pd.DataFrame(columns=result.columns)
 
@@ -70,7 +70,7 @@ for n,item in enumerate(nSamples):
         frames = [newDataframe , dummy]
         newDataframe = pd.concat(frames, ignore_index= True, join  ='outer')
 
-print(newDataframe.shape)
+#print(newDataframe.shape)
 result = newDataframe
 
 # Expand 'ScanCount' and 'FinelineNumber' categories
@@ -82,19 +82,22 @@ result = result.drop(['ScanCount', 'FinelineNumber'], axis=1)
 dataset = pd.concat([result, scanCount, flNum], axis=1)
 dataset.columns = arange(0,len(dataset.columns))
 rows,cols = dataset.shape
-print("The number of samples= {0}\nThe number of features= {1}".format(rows,cols-1))
+#print("The number of samples= {0}\nThe number of features= {1}".format(rows,cols-1))
 feature_number = list(range(1,cols))
 dataset = dataset.replace(' ', 0)
 for i in range(0, cols):
     dataset[i] = dataset[i].convert_objects(convert_numeric=True)
 
 # Caluculate the chi2 values
-chiValues,pval = chi2(dataset[feature_number],dataset[0])
-threshold = 300
-newDataset = chi2Dataframe(threshold, dataset,chiValues)
+#chiValues,pval = chi2(dataset[feature_number],dataset[0])
+#threshold = 300
+#newDataset = chi2Dataframe(threshold, dataset,chiValues)
+newDataset = dataset
 
+"""rowsNew,colsNew = newDataset.shape
+print("The number of samples for newDataset = {0}\nThe number of features for newDataset= {1}".format(rowsNew,colsNew-1))
 zeroCol = pd.DataFrame(dataset[0])
-newDataset = pd.concat([zeroCol , newDataset] , join='outer', axis =1)
+newDataset = pd.concat([zeroCol , newDataset] , join='outer', axis =1)"""
 newDataset.columns = arange(0,len(newDataset.columns))
 split = np.random.permutation(int(rows*0.5))
 redDataset = newDataset.iloc[split]
@@ -103,10 +106,16 @@ feature_number = list(range(1,cols))
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(redDataset[feature_number], redDataset[0], test_size=0.3,random_state=1)
 
 #parameter = {'C': [0.001,0.1,1e0, 1e1, 1e2, 1e3],
-parameter = {'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1], }
-rbf_clf = GridSearchCV(SVC(kernel='sigmoid',random_state= 1), cv=3, param_grid=parameter)
+parameter = {'gamma': [0.001], }
+# 0.0005, 0.001, 0.005, 0.01, 0.1],
+rbf_clf = GridSearchCV(SVC(kernel='sigmoid',random_state= 1), cv=2, param_grid=parameter)
 rbf_clf.fit(X_train,y_train)
 yTest_pred = rbf_clf.predict(X_test)
 yTrain_pred = rbf_clf.predict(X_train)
-print("Score method for validation with RBF kernel: {0}".format(accuracy_score(y_test, yTest_pred)))
-print("Score method for training with RBF kernel: {0}".format(accuracy_score(y_train, yTrain_pred)))
+print("predict method for validation with RBF kernel: {0}".format(accuracy_score(y_test, yTest_pred)))
+print("predict method for training with RBF kernel: {0}".format(accuracy_score(y_train, yTrain_pred)))
+
+"""####Score method for validation with RBF kernel: 0.110522172658
+Score method for training with RBF kernel: 0.109632484143 for gamma 0.0001###"""
+"""predict method for validation with RBF kernel: 0.330481938249
+predict method for training with RBF kernel: 0.334692837114 for gamma 0.01"""
