@@ -27,11 +27,30 @@ def chi2Dataframe(threshold,dataset,chiValues):
         else: continue
     return newDataset
 
-# Read Training data CSV file directly from the desktop and save the results
+################## Function to create histogram to detect outliers #################
+def createHist(data)
+    plt.hist(data)
+    plt.title("Histogram")
+    plt.xlabel("Value")
+    plt.ylabel("Frequency")
+    fig = plt.figure()
+return fig
+
+### Read Training data CSV file directly from the desktop and save the results ####
 result = pd.read_csv("/home/ubuntu/walmartdata(woV).csv").dropna(axis  = 1, how = 'any')
 del result['Upc']
 
-#Giving asymmetrical class numbers symmetry
+######################### Detect outliers through Hist #############################
+figSC = createHist(result['ScanCount'])
+figSC.savefig(figSC.png)
+figFLN = createHist(result['FinelineNumber'])
+figFLN.savefig(figFLN.png)
+
+############################### Remove the outlier #################################
+# The range is -10 to 25 and one scan for 71. Treating this as an outlier
+result = result[result['ScanCount']!=data.max()]
+
+#################### Giving asymmetrical class numbers symmetry ####################
 result['TripType'] = result['TripType'].convert_objects(convert_numeric=True)
 clsNum = np.sort(pd.unique(result['TripType'].ravel()))
 j = 1
@@ -41,7 +60,7 @@ for i in clsNum:
 a = np.sort(pd.unique(result['TripType'].ravel()))
 #print('Sorted new class numbers: {0}'.format(a))
 
-#Count number of samples in each class
+###################### Count number of samples in each class ########################
 nSamples = []
 for i in range(1,len(clsNum)+1):
     nSamples.append(sum(result['TripType']==i))
@@ -52,7 +71,8 @@ for i in range(1,len(clsNum)+1):
 #Create an empty dataframe which will have over-samples samples
 newDataframe = pd.DataFrame(columns=result.columns)
 
-#We need to over sample our minority classes such that each class will have samples=4000
+################################## Over -sample #####################################
+#We need to over sample our minority classes such that each class will have samples>=4000
 
 for n,item in enumerate(nSamples):
     if (item<4000):
@@ -73,7 +93,8 @@ for n,item in enumerate(nSamples):
 #print(newDataframe.shape)
 result = newDataframe
 
-# Expand 'ScanCount' and 'FinelineNumber' categories
+################ Expand 'ScanCount' and 'FinelineNumber' categories ##################
+
 scanCount = dmatrix('C(ScanCount)-1',result, return_type='dataframe')
 flNum = dmatrix('C(FinelineNumber)-1',result, return_type='dataframe')
 result = result.drop(['ScanCount', 'FinelineNumber'], axis=1)
@@ -88,7 +109,7 @@ dataset = dataset.replace(' ', 0)
 for i in range(0, cols):
     dataset[i] = dataset[i].convert_objects(convert_numeric=True)
 
-# Caluculate the chi2 values
+############################ Caluculate the chi2 values ###############################
 #chiValues,pval = chi2(dataset[feature_number],dataset[0])
 #threshold = 300
 #newDataset = chi2Dataframe(threshold, dataset,chiValues)
